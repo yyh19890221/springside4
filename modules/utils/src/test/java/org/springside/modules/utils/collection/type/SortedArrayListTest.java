@@ -2,15 +2,16 @@ package org.springside.modules.utils.collection.type;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.springside.modules.utils.collection.ListUtil;
+
+import com.google.common.collect.Ordering;
 
 public class SortedArrayListTest {
 
 	@Test
 	public void sortedArrayList() {
-		SortedArrayList<String> list = ListUtil.newSortedArrayList();
+		SortedArrayList<String> list = ListUtil.createSortedArrayList();
 		list.add("9");
 		list.add("1");
 		list.add("6");
@@ -27,12 +28,19 @@ public class SortedArrayListTest {
 
 		try {
 			list.add(1, "2");
-			Assert.fail("should fail before");
+			fail("should fail before");
 		} catch (Throwable t) {
 			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
 		}
 
-		SortedArrayList<String> list2 = ListUtil.newSortedArrayList(ComparableComparator.INSTANCE);
+		try {
+			list.set(1, "2");
+			fail("should fail before");
+		} catch (Throwable t) {
+			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
+		}
+
+		SortedArrayList<String> list2 = ListUtil.createSortedArrayList(Ordering.natural());
 		list2.addAll(ListUtil.newArrayList("3", "1", "2"));
 		assertThat(list2).containsExactly("1", "2", "3");
 	}

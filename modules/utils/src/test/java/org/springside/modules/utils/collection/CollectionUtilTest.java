@@ -7,6 +7,8 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.google.common.collect.Ordering;
+
 public class CollectionUtilTest {
 
 	@Test
@@ -16,12 +18,12 @@ public class CollectionUtilTest {
 		List<String> list2 = ListUtil.newArrayList("a", "b", "c");
 		List<String> list3 = ListUtil.newArrayList("a");
 
-		Set<String> set1 = SetUtil.newNavigableSet();
+		Set<String> set1 = SetUtil.newSortedSet();
 		set1.add("a");
 		set1.add("b");
 		set1.add("c");
 
-		Set<String> set2 = SetUtil.newNavigableSet();
+		Set<String> set2 = SetUtil.newSortedSet();
 		set2.add("a");
 
 		assertThat(CollectionUtil.isEmpty(list1)).isTrue();
@@ -48,6 +50,40 @@ public class CollectionUtilTest {
 		assertThat(CollectionUtil.getFirst(null)).isNull();
 		assertThat(CollectionUtil.getLast(list1)).isNull();
 		assertThat(CollectionUtil.getLast(null)).isNull();
+	}
+
+	@Test
+	public void minAndMax() {
+		List<Integer> list = ListUtil.newArrayList(4, 1, 9, 100, 20, 101, 40);
+		
+		assertThat(CollectionUtil.min(list)).isEqualTo(1);
+		assertThat(CollectionUtil.min(list,Ordering.natural())).isEqualTo(1);
+		assertThat(CollectionUtil.max(list)).isEqualTo(101);
+		assertThat(CollectionUtil.max(list,Ordering.natural())).isEqualTo(101);
+		
+		assertThat(CollectionUtil.minAndMax(list).getLeft()).isEqualTo(1);
+		assertThat(CollectionUtil.minAndMax(list).getRight()).isEqualTo(101);
+		
+		assertThat(CollectionUtil.minAndMax(list,Ordering.natural()).getLeft()).isEqualTo(1);
+		assertThat(CollectionUtil.minAndMax(list,Ordering.natural()).getRight()).isEqualTo(101);
+		
+	}
+	
+	@Test
+	public void listCompare() {
+		List<String> list1 = ArrayUtil.asList("d", "a", "c", "b", "e", "i", "g");
+		List<String> list2 = ArrayUtil.asList("d", "a", "c", "b", "e", "i", "g");
+
+		List<String> list3 = ArrayUtil.asList("d", "c", "a", "b", "e", "i", "g");
+		List<String> list4 = ArrayUtil.asList("d", "a", "c", "b", "e");
+		List<String> list5 = ArrayUtil.asList("d", "a", "c", "b", "e", "i", "g", "x");
+
+		assertThat(CollectionUtil.elementsEqual(list1, list1)).isTrue();
+		assertThat(CollectionUtil.elementsEqual(list1, list2)).isTrue();
+
+		assertThat(CollectionUtil.elementsEqual(list1, list3)).isFalse();
+		assertThat(CollectionUtil.elementsEqual(list1, list4)).isFalse();
+		assertThat(CollectionUtil.elementsEqual(list1, list5)).isFalse();
 	}
 
 }

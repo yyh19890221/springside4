@@ -3,8 +3,8 @@ package org.springside.modules.utils.concurrent.threadpool;
 import static org.assertj.core.api.Assertions.*;
 
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.springside.modules.utils.concurrent.ThreadUtil;
 
@@ -13,7 +13,7 @@ public class QueuableCachedThreadPoolTest {
 	public static class LongRunTask implements Runnable {
 		@Override
 		public void run() {
-			ThreadUtil.sleep(5000);
+			ThreadUtil.sleep(5, TimeUnit.SECONDS);
 		}
 	}
 
@@ -40,7 +40,7 @@ public class QueuableCachedThreadPoolTest {
 			// 爆
 			try {
 				threadPool.submit(new LongRunTask());
-				Assert.fail("should fail before");
+				fail("should fail before");
 			} catch (Throwable t) {
 				assertThat(t).isInstanceOf(RejectedExecutionException.class);
 			}

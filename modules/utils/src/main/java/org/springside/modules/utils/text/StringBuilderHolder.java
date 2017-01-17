@@ -8,32 +8,55 @@ package org.springside.modules.utils.text;
  * 不过仅在String对象较大时才有明显效果，否则抵不上访问ThreadLocal的消耗.
  * 
  * 在Netty环境中，使用Netty提供的基于FastThreadLocal的版本。
- * 
- * <pre>
- * private static ThreadLocal&lt;StringBuilderHolder&gt; stringBuilderHolder = new ThreadLocal&lt;StringBuilderHolder&gt;() {
- * 	&#64;Override
- * 	protected StringBuilderHolder initialValue() {
- * 		return new StringBuilderHolder(512);
- * 	}
- * };
- * 
- * StringBuilder sb = stringBuilderHolder.get().stringBuilder();
- * 
- * </pre>
  *
  */
 public class StringBuilderHolder {
 
-	private final StringBuilder sb;
+	private static ThreadLocal<StringBuilder> globalStringBuilder = new ThreadLocal<StringBuilder>() {
+		@Override
+		protected StringBuilder initialValue() {
+			return new StringBuilder(1024);
+		}
+	};
 
-	public StringBuilderHolder(int capacity) {
-		sb = new StringBuilder(capacity);
+	private ThreadLocal<StringBuilder> stringBuilder = new ThreadLocal<StringBuilder>() {
+		@Override
+		protected StringBuilder initialValue() {
+			return new StringBuilder(capaticy);
+		}
+	};
+
+	private int capaticy = 1024;
+
+	public StringBuilderHolder() {
+	}
+
+	public StringBuilderHolder(int capaticy) {
+		this.capaticy = capaticy;
 	}
 
 	/**
+	 * 获取全局的StringBuilder.
+	 * 
+	 * 当StringBuilder会被连续使用，期间不会调用其他可能也使用StringBuilderHolder的子函数时使用.
+	 * 
 	 * 重置StringBuilder内部的writerIndex, 而char[]保留不动.
 	 */
-	public StringBuilder stringBuilder() {
+	public static StringBuilder getGlobal() {
+		StringBuilder sb = globalStringBuilder.get();
+		sb.setLength(0);
+		return sb;
+	}
+
+	/**
+	 * 获取本StringBuilderHolder的StringBuilder.
+	 * 
+	 * 当StringBuilder在使用过程中，会调用其他可能也使用StringBuilderHolder的子函数时使用.
+	 * 
+	 * 重置StringBuilder内部的writerIndex, 而char[]保留不动.
+	 */
+	public StringBuilder get() {
+		StringBuilder sb = stringBuilder.get();
 		sb.setLength(0);
 		return sb;
 	}

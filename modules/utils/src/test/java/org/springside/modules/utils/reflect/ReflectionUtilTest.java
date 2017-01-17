@@ -18,17 +18,29 @@ public class ReflectionUtilTest {
 		TestBean bean = new TestBean();
 		// 无需getter函数, 直接读取privateField
 		assertThat(ReflectionUtil.getFieldValue(bean, "privateField")).isEqualTo(1);
+
+		// 先尝试getter函数, 然后直接读取privateField
+		assertThat(ReflectionUtil.getProperty(bean, "privateField")).isEqualTo(1);
+
 		// 绕过将publicField+1的getter函数,直接读取publicField的原始值
 		assertThat(ReflectionUtil.getFieldValue(bean, "publicField")).isEqualTo(1);
+		// 先尝试getter函数, 成功则补不直接读取publicField
+		assertThat(ReflectionUtil.getProperty(bean, "publicField")).isEqualTo(2);
 
 		bean = new TestBean();
 		// 无需setter函数, 直接设置privateField
 		ReflectionUtil.setFieldValue(bean, "privateField", 2);
 		assertThat(bean.inspectPrivateField()).isEqualTo(2);
+		ReflectionUtil.setProperty(bean, "privateField", 3);
+		assertThat(bean.inspectPrivateField()).isEqualTo(3);
 
 		// 绕过将publicField+1的setter函数,直接设置publicField的原始值
 		ReflectionUtil.setFieldValue(bean, "publicField", 2);
 		assertThat(bean.inspectPublicField()).isEqualTo(2);
+
+		// 没有绕过将publicField+1的setter函数
+		ReflectionUtil.setProperty(bean, "publicField", 3);
+		assertThat(bean.inspectPublicField()).isEqualTo(4);
 
 		try {
 			ReflectionUtil.getFieldValue(bean, "notExist");
@@ -43,7 +55,6 @@ public class ReflectionUtilTest {
 		} catch (IllegalArgumentException e) {
 
 		}
-
 	}
 
 	@Test
@@ -93,7 +104,15 @@ public class ReflectionUtilTest {
 		} catch (IllegalArgumentException e) {
 
 		}
+	}
 
+	@Test
+	public void invokeConstructor() {
+		TestBean bean = ReflectionUtil.invokeConstructor(TestBean.class);
+		assertThat(bean.getPublicField()).isEqualTo(2);
+
+		TestBean3 bean3 = ReflectionUtil.invokeConstructor(TestBean3.class, 4);
+		assertThat(bean3.getId()).isEqualTo(4);
 	}
 
 	@Test
@@ -133,7 +152,7 @@ public class ReflectionUtilTest {
 		}
 
 		// 通過setter函數會被比輸入值加1
-		public void setPublicField(Integer publicField) {
+		public void setPublicField(int publicField) {
 			this.publicField = publicField + 1;
 		}
 
@@ -154,6 +173,15 @@ public class ReflectionUtilTest {
 	}
 
 	public static class TestBean3 {
+
+		public TestBean3() {
+
+		}
+
+		public TestBean3(int id) {
+			super();
+			this.id = id;
+		}
 
 		private int id;
 

@@ -1,5 +1,8 @@
 package org.springside.modules.utils.number;
 
+import java.util.Locale;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import com.google.common.primitives.Ints;
@@ -26,12 +29,26 @@ public abstract class NumberUtil {
 		return Longs.toByteArray(value);
 	}
 
+	/**
+	 * from ElasticSearch Numbers
+	 */
+	public static byte[] toBytes(double val) {
+		return toBytes(Double.doubleToRawLongBits(val));
+	}
+
 	public static int toInt(byte[] bytes) {
 		return Ints.fromByteArray(bytes);
 	}
 
 	public static long toLong(byte[] bytes) {
 		return Longs.fromByteArray(bytes);
+	}
+
+	/**
+	 * from ElasticSearch Numbers
+	 */
+	public static double toDouble(byte[] bytes) {
+		return Double.longBitsToDouble(toLong(bytes));
 	}
 
 	/////// 判断字符串类型//////////
@@ -106,7 +123,7 @@ public abstract class NumberUtil {
 	 * 将10进制的String安全的转化为Integer，当str为空或非数字字符串时，返回default值
 	 */
 	public static Integer toIntObject(String str, Integer defaultValue) {
-		if (str == null) {
+		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
 		try {
@@ -127,7 +144,7 @@ public abstract class NumberUtil {
 	 * 将10进制的String安全的转化为Long，当str为空或非数字字符串时，返回default值
 	 */
 	public static Long toLongObject(String str, Long defaultValue) {
-		if (str == null) {
+		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
 		try {
@@ -148,7 +165,7 @@ public abstract class NumberUtil {
 	 * 将10进制的String安全的转化为Long，当str为空或非数字字符串时，返回default值
 	 */
 	public static Double toDoubleObject(String str, Double defaultValue) {
-		if (str == null) {
+		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
 		try {
@@ -171,7 +188,7 @@ public abstract class NumberUtil {
 	 * 将16进制的String转化为Integer，出错时返回默认值.
 	 */
 	public static Integer hexToIntObject(String str, Integer defaultValue) {
-		if (str == null) {
+		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
 		try {
@@ -192,7 +209,7 @@ public abstract class NumberUtil {
 	 * 将16进制的String转化为Long，出错时返回默认值.
 	 */
 	public static Long hexToLongObject(String str, Long defaultValue) {
-		if (str == null) {
+		if (StringUtils.isEmpty(str)) {
 			return defaultValue;
 		}
 		try {
@@ -201,4 +218,49 @@ public abstract class NumberUtil {
 			return defaultValue;
 		}
 	}
+
+	/////// toString (定义了原子类型与对象类型的参数，保证不会用错函数) ///////
+
+	public static String toString(int i) {
+		return Integer.toString(i);
+	}
+
+	public static String toString(Integer i) {
+		return i.toString();
+	}
+
+	public static String toString(long l) {
+		return Long.toString(l);
+	}
+
+	public static String toString(Long l) {
+		return l.toString();
+	}
+
+	public static String toString(double d) {
+		return Double.toString(d);
+	}
+
+	public static String toString(Double d) {
+		return d.toString();
+	}
+
+	/**
+	 * 输出格式化为小数后两位的double字符串
+	 */
+	public static String to2DigitString(double d) {
+		return String.format(Locale.ROOT, "%.2f", d);
+	}
+
+	/////////// 杂项 ///////
+
+	/**
+	 * 安全的将小于Integer.MAX的long转为int，否则抛出错误
+	 */
+	public static int toInt32(long x) throws IllegalArgumentException {
+		if ((int) x == x)
+			return (int) x;
+		throw new IllegalArgumentException("Int " + x + " out of range");
+	}
+
 }

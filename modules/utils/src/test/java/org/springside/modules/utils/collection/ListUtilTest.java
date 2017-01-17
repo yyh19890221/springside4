@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.springside.modules.utils.collection.type.ComparableComparator;
+
+import com.google.common.collect.Ordering;
 
 public class ListUtilTest {
 	@Test
@@ -26,8 +26,8 @@ public class ListUtilTest {
 
 		List<String> list6 = ListUtil.newCopyOnWriteArrayList("a", "b");
 		assertThat(list6).hasSize(2).containsExactly("a", "b");
-		
-		List<String> list7= ListUtil.newLinkedList();
+
+		List<String> list7 = ListUtil.newLinkedList();
 	}
 
 	@Test
@@ -44,7 +44,7 @@ public class ListUtilTest {
 
 		try {
 			list1.add("a");
-			Assert.fail("should fail before");
+			fail("should fail before");
 		} catch (Throwable t) {
 			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
 		}
@@ -53,7 +53,7 @@ public class ListUtilTest {
 		assertThat(list4).hasSize(1).contains("1");
 		try {
 			list4.add("a");
-			Assert.fail("should fail before");
+			fail("should fail before");
 		} catch (Throwable t) {
 			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
 		}
@@ -63,7 +63,7 @@ public class ListUtilTest {
 
 		try {
 			list6.add("a");
-			Assert.fail("should fail before");
+			fail("should fail before");
 		} catch (Throwable t) {
 			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
 		}
@@ -108,60 +108,29 @@ public class ListUtilTest {
 		ListUtil.shuffle(list, new Random());
 		System.out.println("shuffle list:" + list);
 
-		ListUtil.sort(list, ComparableComparator.INSTANCE);
+		ListUtil.sort(list, Ordering.natural());
 
 		assertThat(list).hasSize(7).containsExactly("a", "b", "c", "d", "e", "g", "i");
+
 		assertThat(ListUtil.binarySearch(list, "b")).isEqualTo(1);
-		assertThat(ListUtil.binarySearch(list, "b", ComparableComparator.INSTANCE)).isEqualTo(1);
+		assertThat(ListUtil.binarySearch(list, "b", Ordering.natural())).isEqualTo(1);
 		assertThat(ListUtil.binarySearch(list, "x")).isEqualTo(-8);
+
+		// reverse
+		List list8 = ListUtil.reverse(list);
+		assertThat(list8).hasSize(7).containsExactly("i", "g", "e", "d", "c", "b", "a");
+
+		// sortReverse
+		ListUtil.shuffle(list8);
+		ListUtil.sortReverse(list8);
+		assertThat(list8).hasSize(7).containsExactly("i", "g", "e", "d", "c", "b", "a");
+
+		ListUtil.shuffle(list8);
+		ListUtil.sortReverse(list8, Ordering.natural());
+		assertThat(list8).hasSize(7).containsExactly("i", "g", "e", "d", "c", "b", "a");
 	}
 
-	@Test
-	public void asList() {
-		List<String> list = ListUtil.asList("d", "a", "c", "b", "e", "i", "g");
-		assertThat(list).hasSize(7).containsExactly("d", "a", "c", "b", "e", "i", "g");
-
-		try {
-			list.add("a");
-			Assert.fail("should fail before");
-		} catch (Throwable t) {
-			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
-		}
-
-		List<String> list2 = ListUtil.asList("d", new String[] { "a", "c", "b", "e", "i", "g" });
-		assertThat(list2).hasSize(7).containsExactly("d", "a", "c", "b", "e", "i", "g");
-
-		try {
-			list2.add("a");
-			Assert.fail("should fail before");
-		} catch (Throwable t) {
-			assertThat(t).isInstanceOf(UnsupportedOperationException.class);
-		}
-
-		List<Integer> list3 = ListUtil.intAsList(1, 2, 3);
-		assertThat(list3).hasSize(3).containsExactly(1, 2, 3);
-
-		List<Long> list4 = ListUtil.longAsList(1L, 2L, 3L);
-		assertThat(list4).hasSize(3).containsExactly(1L, 2L, 3L);
-
-		List<Double> list5 = ListUtil.doubleAsList(1.1d, 2.2d, 3.3d);
-		assertThat(list5).hasSize(3).containsExactly(1.1d, 2.2d, 3.3d);
-	}
-
-	@Test
-	public void listCompare() {
-		List<String> list1 = ListUtil.asList("d", "a", "c", "b", "e", "i", "g");
-		List<String> list2 = ListUtil.asList("d", "a", "c", "b", "e", "i", "g");
-
-		List<String> list3 = ListUtil.asList("d", "c", "a", "b", "e", "i", "g");
-		List<String> list4 = ListUtil.asList("d", "a", "c", "b", "e");
-		List<String> list5 = ListUtil.asList("d", "a", "c", "b", "e", "i", "g", "x");
-
-		assertThat(ListUtil.isEqual(list1, list2)).isTrue();
-		assertThat(ListUtil.isEqual(list1, list3)).isFalse();
-		assertThat(ListUtil.isEqual(list1, list4)).isFalse();
-		assertThat(ListUtil.isEqual(list1, list5)).isFalse();
-	}
+	
 
 	@Test
 	public void collectionCalc() {
@@ -177,7 +146,7 @@ public class ListUtilTest {
 		List<String> result3 = ListUtil.difference(list2, list1);
 		assertThat(result3).containsExactly("4", "5", "7", "6");
 
-		List<String> result4 = ListUtil.complement(list1, list2);
+		List<String> result4 = ListUtil.disjoint(list1, list2);
 		assertThat(result4).containsExactly("1", "2", "3", "4", "5", "7", "6");
 	}
 }

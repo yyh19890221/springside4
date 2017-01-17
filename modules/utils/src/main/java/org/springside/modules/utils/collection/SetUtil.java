@@ -64,7 +64,7 @@ public abstract class SetUtil {
 	 * @see com.google.common.collect.Sets#newTreeSet()
 	 */
 	@SuppressWarnings("rawtypes")
-	public static <T extends Comparable> TreeSet<T> newNavigableSet() {
+	public static <T extends Comparable> TreeSet<T> newSortedSet() {
 		return new TreeSet<T>();
 	}
 
@@ -73,7 +73,7 @@ public abstract class SetUtil {
 	 * 
 	 * @see com.google.common.collect.Sets#newTreeSet(Comparator)
 	 */
-	public static <T> TreeSet<T> newNavigableSet(@Nullable Comparator<? super T> comparator) {
+	public static <T> TreeSet<T> newSortedSet(@Nullable Comparator<? super T> comparator) {
 		return Sets.newTreeSet(comparator);
 	}
 
@@ -172,7 +172,7 @@ public abstract class SetUtil {
 	 * 
 	 * 如果尝试写入该View会抛出UnsupportedOperationException
 	 */
-	public static <E> Set<E> complement(final Set<? extends E> set1, final Set<? extends E> set2) {
+	public static <E> Set<E> disjoint(final Set<? extends E> set1, final Set<? extends E> set2) {
 		return Sets.symmetricDifference(set1, set2);
 	}
 }

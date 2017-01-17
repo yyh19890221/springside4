@@ -11,8 +11,8 @@ public class ThreadLocalContextTest {
 	@Test
 	public void test() throws InterruptedException {
 
-		final CountDownLatch countdown = new CountDownLatch(10);
-		final CyclicBarrier barrier = new CyclicBarrier(10);
+		final CountDownLatch countdown = ConcurrentTools.countDownLatch(10);
+		final CyclicBarrier barrier = ConcurrentTools.cyclicBarrier(10);
 
 		Runnable runnable = new Runnable() {
 			@Override
@@ -26,6 +26,9 @@ public class ThreadLocalContextTest {
 				ThreadLocalContext.put("myname", Thread.currentThread().getName());
 				ThreadUtil.sleep(RandomUtil.nextLong(100, 300));
 				System.out.println(ThreadLocalContext.get("myname"));
+				ThreadLocalContext.reset();
+				System.out.println(
+						"shoud null for " + Thread.currentThread().getName() + ":" + ThreadLocalContext.get("myname"));
 				countdown.countDown();
 			}
 		};

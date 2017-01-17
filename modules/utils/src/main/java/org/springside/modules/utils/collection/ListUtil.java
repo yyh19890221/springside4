@@ -1,7 +1,6 @@
 package org.springside.modules.utils.collection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -10,23 +9,21 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springside.modules.utils.collection.type.FastList;
 import org.springside.modules.utils.collection.type.SortedArrayList;
 
 import com.google.common.collect.Lists;
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 
 /**
  * 关于List的工具集合.
  * 
  * 1. 常用函数(如是否为空，sort/binarySearch/shuffle/reverse(via JDK Collection)
  * 
- * 2. 各种 构造函数(from guava and JDK Collection)
+ * 2. 各种构造函数(from guava and JDK Collection)
  * 
- * 3. Array 转ArrayList的特色函数 (from Guava)
+ * 3. 各种扩展List类型的创建函数
  * 
- * 5. 集合运算，集合是否一致，交集，并集, 差集, 补集，from Commons Collection，但对其不合理的地方做了修正
+ * 5. 集合运算：交集，并集, 差集, 补集，from Commons Collection，但对其不合理的地方做了修正
  * 
  * @author calvin
  */
@@ -101,8 +98,8 @@ public abstract class ListUtil {
 	 * 
 	 * @see com.google.common.collect.Lists#newArrayListWithCapacity(int)
 	 */
-	public static <T> ArrayList<T> newArrayListWithCapacity(int initialArraySize) {
-		return new ArrayList<T>(initialArraySize);
+	public static <T> ArrayList<T> newArrayListWithCapacity(int initSize) {
+		return new ArrayList<T>(initSize);
 	}
 
 	/**
@@ -112,25 +109,6 @@ public abstract class ListUtil {
 	 */
 	public static <T> LinkedList<T> newLinkedList() {
 		return new LinkedList<T>();
-	}
-
-	/**
-	 * 根据等号左边的类型，构造类型转换的SortedArrayList.
-	 * 
-	 * from Jodd的新类型，插入时排序，但指定插入index的方法如add(index,element)不支持
-	 */
-	@SuppressWarnings("rawtypes")
-	public static <T extends Comparable> SortedArrayList<T> newSortedArrayList() {
-		return new SortedArrayList<T>();
-	}
-
-	/**
-	 * 根据等号左边的类型，构造类型转换的SortedArrayList.
-	 * 
-	 * from Jodd的新类型，插入时排序，有几个方法不支持
-	 */
-	public static <T> SortedArrayList<T> newSortedArrayList(Comparator<T> c) {
-		return new SortedArrayList<T>(c);
 	}
 
 	/**
@@ -147,6 +125,36 @@ public abstract class ListUtil {
 	 */
 	public static <T> CopyOnWriteArrayList<T> newCopyOnWriteArrayList(T... elements) {
 		return new CopyOnWriteArrayList<T>(elements);
+	}
+
+	////////////// 特别类型的List//////////////
+
+	/**
+	 * 构造排序的ArrayList.
+	 * 
+	 * from Jodd的新类型，插入时排序，但指定插入index的方法如add(index,element)不支持
+	 */
+	@SuppressWarnings("rawtypes")
+	public static <T extends Comparable> SortedArrayList<T> createSortedArrayList() {
+		return new SortedArrayList<T>();
+	}
+
+	/**
+	 * 构造排序的ArrayList.
+	 * 
+	 * from Jodd的新类型，插入时排序，但指定插入index的方法如add(index,element)不支持
+	 */
+	public static <T> SortedArrayList<T> createSortedArrayList(Comparator<? super T> c) {
+		return new SortedArrayList<T>(c);
+	}
+	
+	/**
+	 * 创建没有RangeCheck的ArrayList
+	 * 
+	 * from hikari连接池，但有不少方法并不支持
+	 */
+	public static <T> FastList<T> createFastList(Class<T> clazz, int capacity){
+		return new FastList(clazz,capacity);
 	}
 
 	///////////////// from JDK Collections的常用构造函数 ///////////////////
@@ -207,7 +215,7 @@ public abstract class ListUtil {
 	///////////////// from JDK Collections的常用函数 ///////////////////
 
 	/**
-	 * 排序, 采用JDK认为最优的排序算法.
+	 * 升序排序, 采用JDK认为最优的排序算法, 使用元素自身的compareTo()方法
 	 * 
 	 * @see java.util.Collections#sort(List)
 	 */
@@ -216,12 +224,30 @@ public abstract class ListUtil {
 	}
 
 	/**
-	 * 排序, 采用JDK认为最优的排序算法.
+	 * 倒序排序, 采用JDK认为最优的排序算法,使用元素自身的compareTo()方法
+	 * 
+	 * @see java.util.Collections#sort(List)
+	 */
+	public static <T extends Comparable<? super T>> void sortReverse(List<T> list) {
+		Collections.sort(list, Collections.reverseOrder());
+	}
+
+	/**
+	 * 升序排序, 采用JDK认为最优的排序算法, 使用Comparetor.
 	 * 
 	 * @see java.util.Collections#sort(List, Comparator)
 	 */
 	public static <T> void sort(List<T> list, Comparator<? super T> c) {
 		Collections.sort(list, c);
+	}
+
+	/**
+	 * 倒序排序, 采用JDK认为最优的排序算法, 使用Comparetor
+	 * 
+	 * @see java.util.Collections#sort(List, Comparator)
+	 */
+	public static <T> void sortReverse(List<T> list, Comparator<? super T> c) {
+		Collections.sort(list, Collections.reverseOrder(c));
 	}
 
 	/**
@@ -264,7 +290,7 @@ public abstract class ListUtil {
 	 * 
 	 * @see com.google.common.collect.Lists#reverse(List)
 	 */
-	public static <T> List<T> reverse(List<T> list) {
+	public static <T> List<T> reverse(final List<T> list) {
 		return Lists.reverse(list);
 	}
 
@@ -277,99 +303,7 @@ public abstract class ListUtil {
 		Collections.shuffle(list, rnd);
 	}
 
-	////////////////// guava一些Array向List的转换 ///////////
-
-	/**
-	 * 将数组转换为List.
-	 * 
-	 * 注意转换后的List不能写入, 否则抛出UnsupportedOperationException
-	 * 
-	 * @see java.util.Arrays#asList(Object...)
-	 */
-	public static <T> List<T> asList(T... a) {
-		return Arrays.asList(a);
-	}
-
-	/**
-	 * 一个独立元素＋一个数组组成新的list，只是一个View，不复制数组内容，而且独立元素在最前.
-	 *
-	 * 
-	 * 注意转换后的List不能写入, 否则抛出UnsupportedOperationException
-	 * 
-	 * @see com.google.common.collect.Lists#asList(Object, Object[])
-	 */
-	public static <E> List<E> asList(E first, E[] rest) {
-		return com.google.common.collect.Lists.asList(first, rest);
-	}
-
-	/**
-	 * Arrays.asList()的加强版, 返回一个底层为原始类型int的List
-	 * 
-	 * 与保存Integer相比节约空间，同时只在读取数据时AutoBoxing.
-	 * 
-	 * @see java.util.Arrays#asList(Object...)
-	 * @see com.google.common.primitives.Ints#asList(int...)
-	 * 
-	 */
-	public static List<Integer> intAsList(int... backingArray) {
-		return Ints.asList(backingArray);
-	}
-
-	/**
-	 * Arrays.asList()的加强版, 返回一个底层为原始类型long的List
-	 * 
-	 * 与保存Long相比节约空间，同时只在读取数据时AutoBoxing.
-	 * 
-	 * @see java.util.Arrays#asList(Object...)
-	 * @see com.google.common.primitives.Longs#asList(long...)
-	 */
-	public static List<Long> longAsList(long... backingArray) {
-		return Longs.asList(backingArray);
-	}
-
-	/**
-	 * Arrays.asList()的加强版, 返回一个底层为原始类型double的List
-	 * 
-	 * 与保存Double相比节约空间，同时也避免了AutoBoxing.
-	 * 
-	 * @see java.util.Arrays#asList(Object...)
-	 * @see com.google.common.primitives.Doubles#asList(double...)
-	 */
-	public static List<Double> doubleAsList(double... backingArray) {
-		return Doubles.asList(backingArray);
-	}
-
 	///////////////// 集合运算 ///////////////////
-
-	/**
-	 * 按顺序比较两个List中的每个元素是否相等.
-	 * 
-	 * from Apache Common Collections4 ListUtils
-	 */
-	public static boolean isEqual(final List<?> list1, final List<?> list2) {
-		if (list1 == list2) {
-			return true;
-		}
-		if (list1 == null || list2 == null || list1.size() != list2.size()) {
-			return false;
-		}
-
-		final Iterator<?> it1 = list1.iterator();
-		final Iterator<?> it2 = list2.iterator();
-		Object obj1 = null;
-		Object obj2 = null;
-
-		while (it1.hasNext() && it2.hasNext()) {
-			obj1 = it1.next();
-			obj2 = it2.next();
-
-			if (!(obj1 == null ? obj2 == null : obj1.equals(obj2))) {
-				return false;
-			}
-		}
-
-		return !(it1.hasNext() || it2.hasNext());
-	}
 
 	/**
 	 * list1,list2的并集（在list1或list2中的对象），产生新List
@@ -387,6 +321,8 @@ public abstract class ListUtil {
 	 * list1, list2的交集（同时在list1和list2的对象），产生新List
 	 * 
 	 * from Apache Common Collection4 ListUtils，但其做了不合理的去重，因此重新改为性能较低但不去重的版本
+	 * 
+	 * 与List.retainAll()相比，考虑了的List中相同元素出现的次数, 如"a"在list1出现两次，而在list2中只出现一次，则交集里会保留一个"a".
 	 */
 	public static <T> List<T> intersection(final List<? extends T> list1, final List<? extends T> list2) {
 		final List<T> result = new ArrayList<T>();
@@ -411,7 +347,7 @@ public abstract class ListUtil {
 	/**
 	 * list1, list2的差集（在list1，不在list2中的对象），产生新List.
 	 * 
-	 * 于removeAll相比，会计算元素出现的次数，如"a"在list1出现两次，而在list2中只出现一次，则差集里会保留一个"a".
+	 * 于List.removeAll()相比，会计算元素出现的次数，如"a"在list1出现两次，而在list2中只出现一次，则差集里会保留一个"a".
 	 */
 	public static <T> List<T> difference(final List<? extends T> list1, final List<? extends T> list2) {
 		final ArrayList<T> result = new ArrayList<T>(list1);
@@ -429,7 +365,7 @@ public abstract class ListUtil {
 	 * 
 	 * from Apache Common Collection4 ListUtils，但其并集－交集时，没有对交集*2，所以做了修改
 	 */
-	public static <T> List<T> complement(final List<? extends T> list1, final List<? extends T> list2) {
+	public static <T> List<T> disjoint(final List<? extends T> list1, final List<? extends T> list2) {
 		List<T> intersection = intersection(list1, list2);
 		List<T> towIntersection = union(intersection, intersection);
 		return difference(union(list1, list2), towIntersection);
